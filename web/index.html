@@ -1,54 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Editor</title>
-	<script
-		src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-		integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
-		crossorigin="anonymous">
-	</script>
-	<script src="./nouislider.min.js"></script>
-	<link rel="stylesheet" href="./style.css">
-	<link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.9/themes/dot-luv/jquery-ui.css">
-	<link rel="stylesheet" href="./nouislider.min.css">
+    <meta charset="UTF-8">
+    <title>Editor</title>
+    <script src="./jquery-3.3.1.slim.min.js">
+    </script>
+    <script src="./nouislider.min.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./jquery-ui.css">
+    <link rel="stylesheet" href="./nouislider.min.css">
 </head>
 <body>
-
+<br>
 <div id="resizable" class="ui-widget-content">
-	<video class="video" loop muted></video>
-	<canvas id="canv"></canvas>
+    <video class="video" loop muted></video>
+    <canvas id="canv"></canvas>
 </div>
-
-<input type="file" id="video_selector" accept=".mkv,video/*"/>
+<div id="upload">
+    <input type="file" id="video_selector" accept=".mkv,video/*"/>
+    <br>
+    <input type="text" id="video_url"/>
+    <button onclick="upload()">确定</button>
+</div>
 <div class="hide_until_load hidden">
-	<span class="current_time"></span>
-	<div class="slider_wrapper">
-		<div id="slider"></div>
-		<div class="slider_time_pos"></div>
-	</div>
-	Start: <input type="number" class="slider_control" data-pos="0" value="0" title="Start" />
-	End: <input type="number" class="slider_control" data-pos="1" value="1" title="End" />
-	<button class='play_toggle' onClick="pause_toggle()">&#10074;&#10074;</button>
-	<label for="mute_toggle">Mute:</label><input type="checkbox" id="mute_toggle" checked />
+    <span class="current_time" id="current_time"></span>
+    <br>
+    <span class="current_time_form"></span>
+    <div class="slider_wrapper" style="align-content: center">
+        <div id="slider"></div>
+        <div class="slider_time_pos"></div>
+    </div>
 
-	<div class="ffmpeg" onclick="copyText()" title="Click here to copy to clipboard.">
-		ffmpeg -i in.mp4 -filter:v "crop=80:60:200:100" -c:a copy out.mp4
-	</div>
+    <div>
+        Start: <input type="number" class="slider_control" data-pos="0" value="0" title="Start" id="start_time"/>
+        End: <input type="number" class="slider_control" data-pos="1" value="1" title="End" id="end_time"/>
+        <button class='play_toggle' onClick="pause_toggle()">&#10074;&#10074;</button>
+        <label for="mute_toggle">Mute:</label><input type="checkbox" id="mute_toggle" checked/>
+    </div>
 
-	<input type="button" id="run_ffmpeg" value="Run FFmpeg in-browser!"/>
+    <br>
 
-	<div class="ffmpeg_log">
-		Running FFmpeg in-browser is unstable, and may crash. It will not work on large files.
-		It may also take a while to get started, as it must download a large (26Mb) library to run.
-	</div>
+    <div>
+        <button onClick='rewind()'>⏪</button>
+        <input type="number" id="time_number" value="10"/> s
+        <button onClick='fast_forward()'> ⏩</button>
+    </div>
 
-	<div class="download_links">
+    <br>
 
-	</div>
+    <div>
+        <button onClick='set_current_start_time()'>set to start time</button>
+        <button onClick="set_current_end_time()">set to end time</button>
+    </div>
+
+
+    <div class="ffmpeg" onclick="copyText()" title="Click here to copy to clipboard.">
+        ffmpeg -i in.mp4 -filter:v "crop=80:60:200:100" -c:a copy out.mp4
+    </div>
+
+
 </div>
 
 <script src="./control.js"></script>
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.5/dist/ffmpeg.min.js"></script>
 </body>
 </html>
