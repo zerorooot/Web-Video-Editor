@@ -235,8 +235,8 @@ async function copyText() {
 }
 
 function build_ffmpeg_string(for_browser_run = false) {
-    let ts = (time_start ? time_start.toFixed(2) : 0);
-    let te = (time_end ? time_end.toFixed(2) : 0);
+    let ts = document.getElementsByClassName("slider_control")[0].value
+    let te =  document.getElementsByClassName("slider_control")[1].value
     let args = [
         '-i', `${for_browser_run ? filename : '"' + filename + '"'}`,
         '-movflags', 'faststart',
