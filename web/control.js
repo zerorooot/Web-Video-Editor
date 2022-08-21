@@ -214,7 +214,7 @@ function add_ffmpeg_merge_command() {
         let cmd = "echo file " + file_name + " >> join.txt"
         command.push(cmd)
     })
-    command.push("ffmpeg -hwaccel_output_format  qsv -f concat -safe 0 -i join.txt -c copy ok-"+filename)
+    command.push("ffmpeg -hwaccel_output_format  qsv -f concat -safe 0 -i join.txt -c copy ok-" + filename)
     all_filename.forEach(function (file_name) {
         let cmd = "rm -rf  " + file_name
         command.push(cmd)
@@ -223,11 +223,32 @@ function add_ffmpeg_merge_command() {
 }
 
 async function copyText() {
-    await navigator.permissions.query({name: "clipboard-write"});
+   await copyToClipboard($('.ffmpeg').text())
+}
 
-    await navigator.clipboard.writeText($('.ffmpeg').text()).then(() => {
-        console.log('Copied to clipboard.');
-    }).catch(console.error)
+function copyToClipboard(textToCopy) {
+    // navigator clipboard 需要https等安全上下文
+    if (navigator.clipboard && window.isSecureContext) {
+        // navigator clipboard 向剪贴板写文本
+        return navigator.clipboard.writeText(textToCopy);
+    } else {
+        // 创建text area
+        let textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        // 使text area不在viewport，同时设置不可见
+        textArea.style.position = "absolute";
+        textArea.style.opacity = 0;
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        return new Promise((res, rej) => {
+            // 执行复制命令并移除文本框
+            document.execCommand('copy') ? res() : rej();
+            textArea.remove();
+        });
+    }
 }
 
 function build_ffmpeg_string(for_browser_run = false) {
