@@ -10,6 +10,11 @@ let time_end = 1;
 let crop = [null, null];
 let selected_file = null;
 
+let left_time = 0
+let right_time
+
+let all_filename = [];
+
 $(() => {
     $("#video_selector").change(function (e) {
         let fileInput = e.target;
@@ -37,6 +42,8 @@ $(() => {
             }
         });
         document.getElementsByClassName("slider_control")[1].value = this.duration
+        time_end = this.duration;
+        right_time = this.duration;
         slider.noUiSlider.on('update', (range) => {
             update_slider_fields(range);
         });
@@ -75,32 +82,6 @@ $(() => {
         console.log(crop);
     });
 
-    $('.slider_time_pos').mousedown((e) => {
-        let ele = e.target;
-        let last_pos = e.clientX;
-
-        function mup() {
-            console.log('up');
-            document.onmousemove = null;
-            document.onmouseup = null;
-        }
-
-        function mmov(e, ele) {
-            let delta = e.clientX - last_pos;
-            console.log('Delta:', delta);
-            last_pos = e.clientX;
-            let total_percent = (ele.offsetLeft + delta) / ele.parentElement.offsetWidth;
-            console.log(total_percent);
-            video.currentTime = video.duration * total_percent
-        }
-
-        document.onmousemove = (e) => {
-            mmov(e, ele)
-        };
-        document.onmouseup = (e) => {
-            mup()
-        };
-    });
 });
 
 function upload() {
@@ -113,12 +94,20 @@ function upload() {
 function update_slider_fields(range) {
     if (!range || range.length < 2)
         return;
-    document.querySelectorAll('.slider_control').forEach(function (input) {
-        // noinspection JSUndefinedPropertyAssignment
-        // input.value = range[input.dataset.pos];
-    });
-    time_start = parseFloat(range[0]);
-    time_end = parseFloat(range[1]);
+
+    time_start = parseFloat(range[0])
+    time_end = parseFloat(range[1])
+
+    if (left_time !== time_start) {
+        video.currentTime = time_start
+        left_time = time_start
+    }
+
+    if (right_time !== time_end) {
+        video.currentTime = time_end
+        right_time = time_end;
+    }
+
 }
 
 
@@ -175,55 +164,62 @@ function pause_toggle() {
 }
 
 function set_current_start_time() {
-    let current_time = video.currentTime.toFixed(2);
-    document.getElementById("start_time").value = current_time;
-    time_start = parseFloat(current_time);
-
-    set_ffmpeg_text()
-    let vals = [];
-    vals[0] = time_start;
-    vals[1] = time_end;
-    slider.noUiSlider.set(vals);
+    document.getElementById("start_time").value = video.currentTime.toFixed(2);
 }
 
 function set_current_end_time() {
-    let current_time = video.currentTime.toFixed(2);
-    document.getElementById("end_time").value = current_time;
-    time_end = parseFloat(current_time);
-
-    set_ffmpeg_text()
-    let vals = [];
-    vals[0] = time_start;
-    vals[1] = time_end;
-    slider.noUiSlider.set(vals);
+    document.getElementById("end_time").value = video.currentTime.toFixed(2);
 }
 
 function rewind() {
     let time = video.currentTime.toFixed(2) - document.getElementById("time_number").value;
-    if (time >= 0) {
-        video.currentTime = time
-    } else {
-        video.currentTime = 0
+    if (time < 0) {
+        time = 0;
     }
+    video.currentTime = time
+
     let range = slider.noUiSlider.get();
     if (time < range[0]) {
-        range[0] = time;
+        range[0] = time
         slider.noUiSlider.set(range);
     }
 }
 
 function fast_forward() {
     let time = Number(video.currentTime.toFixed(2)) + Number(document.getElementById("time_number").value);
-    if (time <= video.duration) {
-        video.currentTime = time;
-    } else {
-        video.currentTime = video.duration;
+    if (time > video.duration) {
+        time = video.duration
     }
+    video.currentTime = time;
+
     let range = slider.noUiSlider.get();
     if (range[1] < time) {
-        range[1] = time;
+        range[1] = time
         slider.noUiSlider.set(range);
     }
+}
+
+function add_ffmpeg_cut_command() {
+    let ts = document.getElementsByClassName("slider_control")[0].value
+    let te = document.getElementsByClassName("slider_control")[1].value
+    let from_time = secondToDate(ts) + "-" + secondToDate(te) + "-" + filename;
+    let fn = from_time.replaceAll(":", "-");
+    all_filename.push(fn)
+    $('.ffmpeg').text($('.ffmpeg').text() + "\n" + $('.ffmpeg_command').text());
+}
+
+function add_ffmpeg_merge_command() {
+    let command = ["touch join.txt"]
+    all_filename.forEach(function (file_name) {
+        let cmd = "echo file " + file_name + " >> join.txt"
+        command.push(cmd)
+    })
+    command.push("ffmpeg -hwaccel_output_format  qsv -f concat -safe 0 -i join.txt -c copy ok-"+filename)
+    all_filename.forEach(function (file_name) {
+        let cmd = "rm -rf  " + file_name
+        command.push(cmd)
+    })
+    $('.ffmpeg').text($('.ffmpeg').text() + "\n" + command.join("\n"));
 }
 
 async function copyText() {
@@ -236,15 +232,12 @@ async function copyText() {
 
 function build_ffmpeg_string(for_browser_run = false) {
     let ts = document.getElementsByClassName("slider_control")[0].value
-    let te =  document.getElementsByClassName("slider_control")[1].value
+    let te = document.getElementsByClassName("slider_control")[1].value
     let args = [
         '-i', `${for_browser_run ? filename : '"' + filename + '"'}`,
-        '-movflags', 'faststart',
-        '-t', (te - ts).toFixed(4)
+        '-ss', secondToDates(ts),
+        '-to', secondToDates(te)
     ];
-    if (ts) {
-        args.unshift('-ss', ts);
-    }
     if (crop[0] && crop[1]) {
         let box = crop_box(crop, video_size.w, video_size.h);
         let crp = `"crop=${box.w}:${box.h}:${box.x}:${box.y}"`;
@@ -252,8 +245,8 @@ function build_ffmpeg_string(for_browser_run = false) {
         args.push('-filter:v', crp);
     }
     let from_time = secondToDate(ts) + "-" + secondToDate(te) + "-" + filename;
-    let fn = for_browser_run ? 'output.mp4' : from_time;
-    args.push('-c:a', 'copy');
+    let fn = for_browser_run ? 'output.mp4' : from_time.replaceAll(":", "-");
+    args.push('-c', 'copy');
     args.push(fn);
     return for_browser_run ? args : args.join(' ');
 }
@@ -297,8 +290,8 @@ function update() {
 
 function set_ffmpeg_text() {
     let mpeg = 'ffmpeg -hwaccel_output_format qsv ' + build_ffmpeg_string(false);
-    if ($('.ffmpeg').text() !== mpeg) {
-        $('.ffmpeg').text(mpeg);
+    if ($('.ffmpeg_command').text() !== mpeg) {
+        $('.ffmpeg_command').text(mpeg);
     }
 }
 

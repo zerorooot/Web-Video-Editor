@@ -28,7 +28,7 @@
     <span class="current_time_form"></span>
     <div class="slider_wrapper" style="align-content: center">
         <div id="slider"></div>
-        <div class="slider_time_pos"></div>
+        <div class="slider_time_pos"  ></div>
     </div>
 
     <div>
@@ -49,15 +49,22 @@
     <br>
 
     <div>
-        <button onClick='set_current_start_time()'>set to start time</button>
+        <button onClick="set_current_start_time()" >set to start time</button>
         <button onClick="set_current_end_time()">set to end time</button>
     </div>
 
+    <br>
+    <div>
+        <button onClick='add_ffmpeg_cut_command()'>add cut command</button>
+        <button onClick="add_ffmpeg_merge_command()">add merge command</button>
+    </div>
 
-    <div class="ffmpeg" onclick="copyText()" title="Click here to copy to clipboard.">
+    <br>
+    <div class="ffmpeg_command" onclick="copyText()" title="Click here to copy to clipboard.">
         ffmpeg -i in.mp4 -filter:v "crop=80:60:200:100" -c:a copy out.mp4
     </div>
 
+    <pre class="ffmpeg" onclick="copyText()" >#!/bin/bash</pre>
 
 </div>
 
