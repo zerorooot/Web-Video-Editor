@@ -50,7 +50,9 @@ $(() => {
         update_slider_fields();
     }).bind('loadeddata', function (e) {
         // noinspection JSIgnoredPromiseFromCall
-        e.target.play();  // start playing
+      // start playing
+      //   e.target.play();
+        this.currentTime = 0;
     }).on('pause', (e) => {
         console.log('Paused: ', e.target.currentTime)
     });
@@ -219,11 +221,12 @@ function add_ffmpeg_merge_command() {
         let cmd = "rm -rf  " + file_name
         command.push(cmd)
     })
+    command.push("rm -rf join.txt")
     $('.ffmpeg').text($('.ffmpeg').text() + "\n" + command.join("\n"));
 }
 
 async function copyText() {
-   await copyToClipboard($('.ffmpeg').text())
+    await copyToClipboard($('.ffmpeg').text())
 }
 
 function copyToClipboard(textToCopy) {

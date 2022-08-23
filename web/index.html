@@ -13,7 +13,7 @@
 <body>
 <br>
 <div id="resizable" class="ui-widget-content">
-    <video class="video" loop muted></video>
+    <video class="video"  muted></video>
     <canvas id="canv"></canvas>
 </div>
 <div id="upload">
@@ -34,7 +34,7 @@
     <div>
         Start: <input type="number" class="slider_control" data-pos="0" value="0" title="Start" id="start_time"/>
         End: <input type="number" class="slider_control" data-pos="1" value="1" title="End" id="end_time"/>
-        <button class='play_toggle' onClick="pause_toggle()">&#10074;&#10074;</button>
+        <button class='play_toggle' onClick="pause_toggle()">&#9654;</button>
         <label for="mute_toggle">Mute:</label><input type="checkbox" id="mute_toggle" checked/>
     </div>
 
@@ -50,7 +50,7 @@
 
     <div>
         <button onClick="set_current_start_time()" >set to start time</button>
-        <button onClick="set_current_end_time()">set to end time</button>
+        <button onClick="set_current_end_time()" >set to end time</button>
     </div>
 
     <br>
