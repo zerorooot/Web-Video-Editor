@@ -173,6 +173,10 @@ function set_current_end_time() {
     document.getElementById("end_time").value = video.currentTime.toFixed(2);
 }
 
+function set_end_time() {
+    document.getElementById("end_time").value = video.duration;
+}
+
 function rewind() {
     let time = video.currentTime.toFixed(2) - document.getElementById("time_number").value;
     if (time < 0) {
