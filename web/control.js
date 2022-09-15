@@ -2,6 +2,8 @@ let video = document.querySelector(".video");
 const canvas = document.getElementById("canv");
 const ctx = canvas.getContext("2d");
 let slider = document.getElementById('slider');
+let tempPath = "/home/ubuntu/temp/";
+let outPath = "/home/ubuntu/nas/video/japan/";
 
 let video_size = {'w': 0, 'h': 0};
 let filename = 'in.mp4';
@@ -209,7 +211,7 @@ function add_ffmpeg_cut_command() {
     let ts = document.getElementsByClassName("slider_control")[0].value
     let te = document.getElementsByClassName("slider_control")[1].value
     let from_time = secondToDate(ts) + "-" + secondToDate(te) + "-" + filename;
-    let fn = from_time.replaceAll(":", "-");
+    let fn = tempPath + from_time.replaceAll(":", "-");
     all_filename.push(fn)
     $('.ffmpeg').text($('.ffmpeg').text() + "\n" + $('.ffmpeg_command').text());
 }
@@ -220,12 +222,14 @@ function add_ffmpeg_merge_command() {
         let cmd = "echo file " + file_name + " >> join.txt"
         command.push(cmd)
     })
-    command.push("ffmpeg -hwaccel_output_format  qsv -f concat -safe 0 -i join.txt -c copy ok-" + filename)
+    command.push("ffmpeg -hwaccel_output_format  qsv -f concat -safe 0 -i join.txt -c copy " + outPath + filename);
     all_filename.forEach(function (file_name) {
         let cmd = "rm -rf  " + file_name
         command.push(cmd)
     })
     command.push("rm -rf join.txt")
+    command.push("rm -rf *.jpg")
+    command.push("bash /home/ubuntu/nas/japan/a.sh")
     $('.ffmpeg').text($('.ffmpeg').text() + "\n" + command.join("\n"));
 }
 
@@ -274,8 +278,9 @@ function build_ffmpeg_string(for_browser_run = false) {
     }
     let from_time = secondToDate(ts) + "-" + secondToDate(te) + "-" + filename;
     let fn = for_browser_run ? 'output.mp4' : from_time.replaceAll(":", "-");
+    let name = tempPath + fn;
     args.push('-c', 'copy');
-    args.push(fn);
+    args.push(name);
     return for_browser_run ? args : args.join(' ');
 }
 
