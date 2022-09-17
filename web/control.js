@@ -228,8 +228,9 @@ function add_ffmpeg_merge_command() {
         command.push(cmd)
     })
     command.push("rm -rf join.txt")
-    command.push("rm -rf *.jpg")
-    command.push("bash /home/ubuntu/nas/japan/a.sh")
+    //command.push("rm -rf *.jpg")
+    command.push("cd /home/ubuntu/nas/video/japan/")
+    command.push("bash /home/ubuntu/nas/video/japan/a.sh")
     $('.ffmpeg').text($('.ffmpeg').text() + "\n" + command.join("\n"));
 }
 
